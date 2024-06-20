@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="mt-4">
+    <h1>{{ server.name }}</h1>
+    <p>IP Address: {{ server.ip_address }}</p>
+    <p>Location: {{ server.location }}</p>
+    <p>Status: {{ server.status }}</p>
+
+    <h2>Performance Metrics</h2>
+    <ul class="list-group">
+        {% for metric in metrics %}
+        <li class="list-group-item">
+            CPU Usage: {{ metric.cpu_usage }}%, Memory Usage: {{ metric.memory_usage }}%, Disk Usage: {{
+            metric.disk_usage }}%, Network Traffic: {{ metric.network_traffic }} MB, Timestamp: {{ metric.timestamp }}
+        </li>
+        {% endfor %}
+    </ul>
+
+    <h2 class="mt-4">Alerts</h2>
+    <ul class="list-group">
+        {% for alert in alerts %}
+        <li class="list-group-item">
+            Alert Type: {{ alert.alert_type }}, Description: {{ alert.description }}, Timestamp: {{ alert.timestamp }},
+            Resolved: {{ alert.resolved }}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

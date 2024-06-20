@@ -1,0 +1,8 @@
+CReation on SQL
+
+CREATE DATABASE samsdatabase;
+CREATE USER samsproject WITH ENCRYPTED PASSWORD 'password';
+\c samsdatabase samsproject;
+\c samsdatabase postgres;
+GRANT ALL ON SCHEMA public TO samsproject;
+GRANT ALL PRIVILEGES ON DATABASE samsdatabase TO samsproject;
