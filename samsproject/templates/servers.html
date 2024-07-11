@@ -5,7 +5,7 @@
     <p>IP Address: {{ server.ip_address }}</p>
     <p>Location: {{ server.location }}</p>
     <p>Status: {{ server.status }}</p>
-
+    <br>
     <h2>Performance Metrics</h2>
     <ul class="list-group">
         {% for metric in metrics %}
@@ -16,7 +16,7 @@
         {% endfor %}
     </ul>
 
-    <h2 class="mt-4">Alerts</h2>
+    <h2 class="mt-4">Alerts</h2><br>
     <ul class="list-group">
         {% for alert in alerts %}
         <li class="list-group-item">
@@ -26,4 +26,9 @@
         {% endfor %}
     </ul>
 </div>
+<script>
+    setTimeout(function () {
+        location.reload();
+    }, 5000); //reload every 5 seconds to feel realtime
+</script>
 {% endblock %}
