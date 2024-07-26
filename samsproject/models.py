@@ -14,12 +14,12 @@ class PerformanceMetrics(db.Model):
     memory_usage = db.Column(db.Float, nullable=False)
     disk_usage = db.Column(db.Float, nullable=False)
     network_traffic = db.Column(db.Float, nullable=False)
-    timestamp = db.Column(db.DateTime, nullable=False)
+    timestamp = db.Column(db.String, nullable=False)
 
 class Alert(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     server_id = db.Column(db.String, db.ForeignKey('server.id'), nullable=False)
     alert_type = db.Column(db.String(50), nullable=False)
     description = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime, nullable=False)
+    timestamp = db.Column(db.String, nullable=False)
     resolved = db.Column(db.Boolean, default=False)

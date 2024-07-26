@@ -11,7 +11,8 @@
         {% for metric in metrics %}
         <li class="list-group-item">
             CPU Usage: {{ metric.cpu_usage }}%, Memory Usage: {{ metric.memory_usage }}%, Disk Usage: {{
-            metric.disk_usage }}%, Network Traffic: {{ metric.network_traffic }} MB, Timestamp: {{ metric.timestamp }}
+            metric.disk_usage }}%, Network Traffic: {{ ((metric.network_traffic)//1000/1000) }} MB, Timestamp: {{
+            metric.timestamp }}
         </li>
         {% endfor %}
     </ul>
@@ -31,4 +32,17 @@
         location.reload();
     }, 5000); //reload every 5 seconds to feel realtime
 </script>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .list-group {
+        height: 400px;
+        border: 1px solid black;
+        border-radius: 10px;
+        padding: 5px;
+        margin: 5px;
+        overflow-y: scroll;
+    }
+</style>
 {% endblock %}

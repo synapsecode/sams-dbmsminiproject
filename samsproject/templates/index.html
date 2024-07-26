@@ -9,8 +9,151 @@
         </li>
         {% endfor %}
     </ul>
+
+    <br><br>
+
+    <h1>Custom Queries</h1>
+    <div class="premade">
+        <input type="button" value="Latest Performance Metrics" class="btn btn-primary" onclick="getLPM()">
+        <input type="button" value="Servers with Average CPU Usage over 20%" class="btn btn-primary"
+            onclick="getAvgHighCPUUsageServers(20)">
+        <input type="button" value="Show all Unresolved Alerts" class="btn btn-primary" onclick="getUnresovledAlerts()">
+        <input type="button" value="Get Alert Summary" class="btn btn-primary" onclick="getAlertReport()">
+        <input type="button" value="Get Inactive Servers" class="btn btn-primary" onclick="getInactiveServers()">
+    </div>
+
+    <br>
+    <textarea name="query" id="querybox" rows="8" cols="80" placeholder="Enter your Custom Query here">
+    </textarea>
+    <br>
+
+    <input type="button" value="Submit Query" id="querygen">
+    <br><br>
+
+    {% if results != [] %}
+    <h1>Query Results</h1>
+    <table class="styled-table">
+        <tr>
+            {% for c in results[1] %}
+            <th> {{c}} </th>
+            {% endfor %}
+        </tr>
+        {% for r in results[0] %}
+        <tr>
+            {% for v in r %}
+            <td> {{v}} </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            intializeQuerySubmissionCode();
+        });
+
+        function intializeQuerySubmissionCode() {
+            document.getElementById('querygen').addEventListener('click', (e) => {
+                const query = document.getElementById('querybox').value;
+                fetch('/execute_query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        "query": query
+                    })
+                }).then(response => response.text())
+                    .then(html => {
+                        console.log('replacing html');
+                        document.documentElement.innerHTML = html;
+                        intializeQuerySubmissionCode();
+                        document.getElementById('querybox').value = query;
+                    })
+            });
+        }
+
+        function reinitializeScripts() {
+            intializeQuerySubmissionCode();
+        }
+
+
+        function frontendexecutor(query) {
+            document.getElementById('querybox').value = query;
+            document.getElementById('querygen').click();
+        }
+
+        function getLPM() {
+            const query = `SELECT s.name AS "Server Name", pm.cpu_usage, pm.memory_usage, pm.disk_usage, pm.network_traffic, pm.timestamp
+FROM server s
+JOIN (
+    SELECT server_id, MAX(timestamp) AS latest_timestamp
+    FROM performance_metrics
+    GROUP BY server_id
+) latest_pm ON s.id = latest_pm.server_id
+JOIN performance_metrics pm ON pm.server_id = latest_pm.server_id AND pm.timestamp = latest_pm.latest_timestamp;
+`;
+            frontendexecutor(query);
+        }
+
+
+        function getAvgHighCPUUsageServers(pc) {
+            const query = `SELECT s.name AS "Server Name", AVG(pm.cpu_usage) AS avg_cpu_usage
+FROM server s
+JOIN performance_metrics pm ON s.id = pm.server_id
+GROUP BY s.id, s.name
+HAVING AVG(pm.cpu_usage) > ${pc};
+`;
+            frontendexecutor(query);
+        }
+
+
+
+        function getUnresovledAlerts() {
+            const query = `SELECT a.id AS alert_id, a.alert_type, a.description, a.timestamp, s.name AS server_name, s.ip_address, s.location
+FROM alert a
+JOIN server s ON a.server_id = s.id
+WHERE a.resolved = FALSE;`;
+            frontendexecutor(query);
+        }
+
+
+        function getAlertReport() {
+            const query = `SELECT s.id AS server_id, s.name AS "Server Name", a.alert_type as "Alert Type", COUNT(a.id) AS "Instances"
+FROM server s
+JOIN alert a ON s.id = a.server_id
+GROUP BY s.id, s.name, a.alert_type
+ORDER BY s.id, a.alert_type;`
+            frontendexecutor(query);
+        }
+
+        function getAlertReport() {
+            const query = `SELECT s.id AS server_id, s.name AS "Server Name", a.alert_type as "Alert Type", COUNT(a.id) AS "Instances"
+FROM server s
+JOIN alert a ON s.id = a.server_id
+GROUP BY s.id, s.name, a.alert_type
+ORDER BY s.id, a.alert_type;`
+            frontendexecutor(query);
+        }
+
+
+        function getInactiveServers() {
+            const query = `SELECT s.id AS server_id, s.name AS server_name, MAX(pm.timestamp) AS last_recorded
+FROM server s
+LEFT JOIN performance_metrics pm ON s.id = pm.server_id
+GROUP BY s.id, s.name
+HAVING MAX(pm.timestamp) < datetime('now', '+5 hours', '30 minutes', '-10 minutes') OR MAX(pm.timestamp) IS NULL;`;
+            frontendexecutor(query);
+        }
+
+
+    </script>
+
+
+
     <!-- <h2 class="mt-4">Add New Server</h2>
-    <form action="{{ url_for('main.add_server') }}" method="POST">
+    <form action="{{ url_for('main.register_server') }}" method="POST">
         <div class="form-group">
             <label for="name">Server Name</label>
             <input type="text" class="form-control" id="name" name="name" required>
@@ -30,4 +173,57 @@
         <button type="submit" class="btn btn-primary">Add Server</button>
     </form> -->
 </div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+    }
+
+    table {
+        margin: 0;
+        font-size: 18px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+        width: 100%;
+        height: 700px;
+        overflow-y: scroll;
+        overflow-x: scroll;
+        border: 1px solid black;
+        border-radius: 10px;
+        display: inline-block;
+    }
+
+    .styled-table thead tr {
+        background-color: #009879;
+        color: #ffffff;
+        text-align: left;
+    }
+
+    .styled-table th,
+    .styled-table td {
+        padding: 12px 15px;
+    }
+
+    .styled-table tbody tr {
+        border-bottom: 1px solid #dddddd;
+    }
+
+    .styled-table tbody tr:nth-of-type(even) {
+        background-color: #f3f3f3;
+    }
+
+    .styled-table tbody tr:last-of-type {
+        border-bottom: 2px solid #009879;
+    }
+
+    .styled-table tbody tr.active-row {
+        font-weight: bold;
+        color: #009879;
+    }
+
+    .styled-table tbody tr:hover {
+        background-color: #f1f1f1;
+    }
+</style>
 {% endblock %}

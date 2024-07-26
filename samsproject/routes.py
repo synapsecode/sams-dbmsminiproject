@@ -2,13 +2,14 @@ from flask import render_template, redirect, url_for, request, Blueprint
 from samsproject.models import Server, PerformanceMetrics, Alert
 from samsproject import db
 import json
+from sqlalchemy.sql import text
 
 main = Blueprint('main', __name__)
 
 @main.route('/')
 def index():
     servers = Server.query.all()
-    return render_template('index.html', servers=servers)
+    return render_template('index.html', servers=servers,results=[])
 
 @main.route('/server/<server_id>')
 def server_detail(server_id):
@@ -86,3 +87,20 @@ def save_performance():
     db.session.commit()
     
     return "ALERT CREATED!", 200
+
+@main.route('/execute_query', methods=['POST'])
+def execute_query():
+    data = request.get_json()
+    if(data == None):
+        return "NO PAYLOAD", 400
+    
+    query = data['query'].strip()
+    res = db.session.execute(text(query))
+
+    columns = [str(k) for k in res.keys()]
+    rows = [row for row in res.all()]
+    
+    data = [rows, columns]
+
+    servers = Server.query.all()
+    return render_template('index.html', servers=servers, results=data)
