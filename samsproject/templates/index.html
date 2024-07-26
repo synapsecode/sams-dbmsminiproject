@@ -19,7 +19,8 @@
             onclick="getAvgHighCPUUsageServers(20)">
         <input type="button" value="Show all Unresolved Alerts" class="btn btn-primary" onclick="getUnresovledAlerts()">
         <input type="button" value="Get Alert Summary" class="btn btn-primary" onclick="getAlertReport()">
-        <input type="button" value="Get Inactive Servers" class="btn btn-primary" onclick="getInactiveServers()">
+        <input type="button" value="Get Inactive Servers" class="btn btn-primary"
+            onclick="getInactiveServers('postgres')">
     </div>
 
     <br>
@@ -138,12 +139,13 @@ ORDER BY s.id, a.alert_type;`
         }
 
 
-        function getInactiveServers() {
+        function getInactiveServers(db = 'mysql') {
+            const datecond = db ? `MAX(pm.timestamp AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Kolkata')::date < (CURRENT_DATE - INTERVAL '7 days')` : `MAX(pm.timestamp) < datetime('now', '+5 hours', '30 minutes', '-10 minutes')`;
             const query = `SELECT s.id AS server_id, s.name AS server_name, MAX(pm.timestamp) AS last_recorded
 FROM server s
 LEFT JOIN performance_metrics pm ON s.id = pm.server_id
 GROUP BY s.id, s.name
-HAVING MAX(pm.timestamp) < datetime('now', '+5 hours', '30 minutes', '-10 minutes') OR MAX(pm.timestamp) IS NULL;`;
+HAVING ${datecond} OR MAX(pm.timestamp) IS NULL;`;
             frontendexecutor(query);
         }
 

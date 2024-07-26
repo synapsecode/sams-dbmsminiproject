@@ -11,6 +11,9 @@ import requests
 import sys
 import random
 
+# SERVER = 'http://localhost:3000'
+SERVER = 'https://dbms-miniproject.vercel.app'
+
 def get_identifier():
     import platform
     import hashlib
@@ -100,7 +103,7 @@ def create_alert(msg, typ):
         'type': typ,
     })
     print(payload)
-    resp = requests.post('http://127.0.0.1:3000/create_alert', json=payload)
+    resp = requests.post(f'{SERVER}/create_alert', json=payload)
     if(resp.status_code == 200):
         print('Alert Raised Successfully!')
     else:
@@ -117,7 +120,7 @@ def register_server():
         'sid': sid,
         'location': city,
     })
-    resp = requests.post('http://127.0.0.1:3000/register_server', json=payload)
+    resp = requests.post(f'{SERVER}/register_server', json=payload)
     if(resp.status_code == 200):
         print('Server Registered!')
     else:
@@ -135,7 +138,7 @@ def job():
     elif(metrics['disk'] > 70.0):
         create_alert(f"WARNING! HIGH USAGE DETECTED ({metrics['disk']})", "DISK")
 
-    resp = requests.post('http://127.0.0.1:3000/save_performance', json=json.dumps(metrics))
+    resp = requests.post(f'{SERVER}/save_performance', json=json.dumps(metrics))
     if(resp.status_code == 200):
         print('Metrics Registered =>', metrics)
     else:
