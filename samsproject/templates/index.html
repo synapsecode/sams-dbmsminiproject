@@ -140,7 +140,7 @@ ORDER BY s.id, a.alert_type;`
 
 
         function getInactiveServers(db = 'mysql') {
-            const datecond = db ? `MAX(pm.timestamp AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Kolkata')::date < (CURRENT_DATE - INTERVAL '7 days')` : `MAX(pm.timestamp) < datetime('now', '+5 hours', '30 minutes', '-10 minutes')`;
+            const datecond = db ? `MAX(pm.timestamp) < TO_CHAR(CURRENT_TIMESTAMP - INTERVAL '7 seconds' + INTERVAL '5 hours' + INTERVAL '30 minutes', 'YYYY-MM-DD HH24:MI:SS')` : `MAX(pm.timestamp) < datetime('now', '+5 hours', '30 minutes', '-10 minutes')`;
             const query = `SELECT s.id AS server_id, s.name AS server_name, MAX(pm.timestamp) AS last_recorded
 FROM server s
 LEFT JOIN performance_metrics pm ON s.id = pm.server_id
